@@ -7,6 +7,9 @@ import prisma from "./routes/util/database";
 import UserRoutes from "./routes/api/user";
 import ProductRoute from "./routes/api/product"
 import OrderRoute from "./routes/api/order"
+import cors from "cors";
+import helmet from "helmet";
+import cspHandler from "./Middlewares/cspHandler.Middleware";
 
 async function main() {
     const app = express();
@@ -25,6 +28,9 @@ async function main() {
     })
 
     app.use(limiter)
+    app.use(cors());
+    app.use(helmet());
+    app.use(cspHandler);
 
     app.use("/auth", AuthRoutes);
     app.use("/user", UserRoutes);

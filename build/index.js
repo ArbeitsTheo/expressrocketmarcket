@@ -21,6 +21,9 @@ const database_1 = __importDefault(require("./routes/util/database"));
 const user_1 = __importDefault(require("./routes/api/user"));
 const product_1 = __importDefault(require("./routes/api/product"));
 const order_1 = __importDefault(require("./routes/api/order"));
+const cors_1 = __importDefault(require("cors"));
+const helmet_1 = __importDefault(require("helmet"));
+const cspHandler_Middleware_1 = __importDefault(require("./Middlewares/cspHandler.Middleware"));
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         const app = (0, express_1.default)();
@@ -35,6 +38,9 @@ function main() {
             // store: ... , // Use an external store for consistency across multiple server instances.
         });
         app.use(limiter);
+        app.use((0, cors_1.default)());
+        app.use((0, helmet_1.default)());
+        app.use(cspHandler_Middleware_1.default);
         app.use("/auth", auth_1.default);
         app.use("/user", user_1.default);
         app.use("/product", product_1.default);

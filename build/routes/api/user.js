@@ -42,10 +42,21 @@ router.patch("/:id", checkUserExistence_1.default, checkOldPassword_1.default, (
 router.delete("/:id", checkUserExistence_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = parseInt(req.params.id);
     try {
+        const userOrders = yield database_1.default.order.findMany({
+            where: { userId: userId },
+        });
+        for (const order of userOrders) {
+            yield database_1.default.productOrder.deleteMany({
+                where: { orderId: order.id },
+            });
+        }
+        yield database_1.default.order.deleteMany({
+            where: { userId: userId },
+        });
         yield database_1.default.user.delete({
             where: { id: userId },
         });
-        res.status(204).send();
+        res.status(204).send("User delete");
     }
     catch (error) {
         console.error("Error deleting user:", error);

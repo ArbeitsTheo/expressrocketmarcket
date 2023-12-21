@@ -1,7 +1,8 @@
-import express, { Router, Request, Response } from "express";
+import express, { Router, Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import prisma from "../util/database";
+import validateEmailMiddleware from "../../Middlewares/validateEmail.Middleware";
 
 interface User {
   email: string;
@@ -15,7 +16,9 @@ const router: Router = express.Router();
 
 import { Prisma } from '@prisma/client';
 
-router.post('/signup', async (req: Request, res: Response) => {
+
+
+router.post('/signup', validateEmailMiddleware, async (req: Request, res: Response) => {
   const { email, password, firstName, lastName, role }: User = req.body;
 
   try {
@@ -47,12 +50,12 @@ router.post('/signup', async (req: Request, res: Response) => {
 });
 
 
-router.post("/signIn", async (req: Request, res: Response) => {
+router.post("/signIn", validateEmailMiddleware, async (req: Request, res: Response) => {
   const { email, password }: User = req.body;
 
   try {
     const user = await prisma.user.findUnique({ where: { email } });
-    console.log(user);
+    // console.log(user);
     if (!user) {
       return res.status(401).send("Unauthorized");
     }
@@ -66,7 +69,7 @@ router.post("/signIn", async (req: Request, res: Response) => {
     const token: string = jwt.sign({ email: user.email, role: user.role }, process.env.JWT_SECRET || "", {
       expiresIn: "1h"
     });
-    console.log(token);
+    // console.log(token);
     return res.status(200).send(token);
   } catch (error) {
     console.log(error);

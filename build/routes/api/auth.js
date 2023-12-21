@@ -16,8 +16,9 @@ const express_1 = __importDefault(require("express"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const database_1 = __importDefault(require("../util/database"));
+const validateEmail_Middleware_1 = __importDefault(require("../../Middlewares/validateEmail.Middleware"));
 const router = express_1.default.Router();
-router.post('/signup', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post('/signup', validateEmail_Middleware_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, password, firstName, lastName, role } = req.body;
     try {
         const existingUser = yield database_1.default.user.findUnique({
@@ -44,11 +45,11 @@ router.post('/signup', (req, res) => __awaiter(void 0, void 0, void 0, function*
         return res.status(500).send("Internal server error");
     }
 }));
-router.post("/signIn", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/signIn", validateEmail_Middleware_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, password } = req.body;
     try {
         const user = yield database_1.default.user.findUnique({ where: { email } });
-        console.log(user);
+        // console.log(user);
         if (!user) {
             return res.status(401).send("Unauthorized");
         }
@@ -59,7 +60,7 @@ router.post("/signIn", (req, res) => __awaiter(void 0, void 0, void 0, function*
         const token = jsonwebtoken_1.default.sign({ email: user.email, role: user.role }, process.env.JWT_SECRET || "", {
             expiresIn: "1h"
         });
-        console.log(token);
+        // console.log(token);
         return res.status(200).send(token);
     }
     catch (error) {

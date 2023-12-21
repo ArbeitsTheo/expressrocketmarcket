@@ -48,3 +48,5 @@ model ProductOrder {
 
   @@id([orderId, productId])
 }
+
+// pour les delete je sais qu'il y a un paramètre de cascade mais pour une raison que j'ignore il ne fonctionne pas 

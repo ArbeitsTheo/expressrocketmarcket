@@ -40,12 +40,26 @@ router.patch("/:id", checkUserExistence, checkOldPassword, async (req: Request, 
 router.delete("/:id", checkUserExistence, async (req: Request, res: Response) => {
     const userId: number = parseInt(req.params.id);
 
+
     try {
+        const userOrders = await prisma.order.findMany({
+            where: { userId: userId },
+        });
+
+        for (const order of userOrders) {
+            await prisma.productOrder.deleteMany({
+                where: { orderId: order.id },
+            });
+        }
+
+        await prisma.order.deleteMany({
+            where: { userId: userId },
+        });
         await prisma.user.delete({
             where: { id: userId },
         });
 
-        res.status(204).send();
+        res.status(204).send("User delete");
     } catch (error) {
         console.error("Error deleting user:", error);
         res.status(500).send("Internal Server Error");
