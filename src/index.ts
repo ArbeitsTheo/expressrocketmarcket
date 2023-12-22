@@ -22,6 +22,7 @@ async function main() {
     app.use(express.json());
 
     const limiter = rateLimit({
+        validate: { trustProxy: false },
         windowMs: 15 * 60 * 1000, // 15 minutes
         limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
         standardHeaders: true, // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
