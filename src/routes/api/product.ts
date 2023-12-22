@@ -64,7 +64,20 @@ router.patch("/:id", checkRoles(['Admin', 'Gest']), async (req: Request, res: Re
 router.delete("/:id", checkRoles(['Admin', 'Gest']), async (req: Request, res: Response) => {
     const productId: number = parseInt(req.params.id);
 
+    // Vérifie si productId est un nombre valide
+    if (isNaN(productId)) {
+        return res.status(400).send("Invalid product ID");
+    }
+
     try {
+        const existingProduct = await prisma.product.findUnique({
+            where: { id: productId },
+        });
+
+        if (!existingProduct) {
+            return res.status(404).send("Product not found");
+        }
+
         await prisma.$transaction([
             prisma.productOrder.deleteMany({
                 where: { productId },
@@ -80,6 +93,7 @@ router.delete("/:id", checkRoles(['Admin', 'Gest']), async (req: Request, res: R
         res.status(500).send("Internal Server Error");
     }
 });
+
 
 
 router.get("/:id", async (req: Request, res: Response) => {
