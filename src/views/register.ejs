@@ -59,7 +59,7 @@
           ? 'http://localhost:3000'
           : 'https://tp-expressrocketmarket.onrender.com';
         try {
-          const response = await fetch(apiUrl + 'auth/signup', {
+          const response = await fetch(apiUrl + '/auth/signup', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
