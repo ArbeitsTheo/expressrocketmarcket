@@ -41,7 +41,7 @@
                 const apiUrl = currentDomain.includes('localhost')
                     ? 'http://localhost:3000'
                     : 'https://tp-expressrocketmarket.onrender.com';
-                    
+
                 try {
                     const response = await fetch(apiUrl + '/auth/signIn', {
                         method: 'POST',
@@ -52,8 +52,6 @@
                     });
 
                     const data = await response.json();
-                    console.log(data["accessToken"]);
-                    console.log(data["error"]);
 
                     if (data["error"] == undefined) {
                         localStorage.setItem('jwtToken', data["accessToken"]);
