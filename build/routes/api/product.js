@@ -68,7 +68,17 @@ router.patch("/:id", (0, auth_guard_1.checkRoles)(['Admin', 'Gest']), (req, res)
 }));
 router.delete("/:id", (0, auth_guard_1.checkRoles)(['Admin', 'Gest']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const productId = parseInt(req.params.id);
+    // Vérifie si productId est un nombre valide
+    if (isNaN(productId)) {
+        return res.status(400).send("Invalid product ID");
+    }
     try {
+        const existingProduct = yield database_1.default.product.findUnique({
+            where: { id: productId },
+        });
+        if (!existingProduct) {
+            return res.status(404).send("Product not found");
+        }
         yield database_1.default.$transaction([
             database_1.default.productOrder.deleteMany({
                 where: { productId },

@@ -7,47 +7,53 @@
 
 <body>
 
-    <h1>User Information (pas finis)</h1>
+    <h1>User Information</h1>
 
 
     <div id="user-info-container"></div>
 
     <script>
-        // const apiUrl = currentDomain.includes('localhost')
-        //     ? 'http://localhost:3000'
-        //     : 'https://tp-expressrocketmarket.onrender.com';
-        // // pas le temps de finir juste a récupe le mail
-        // const Url = apiUrl + "/user/";
+        const currentDomain = window.location.href;
+        const apiUrl = currentDomain.includes('localhost')
+            ? 'http://localhost:3000'
+            : 'https://tp-expressrocketmarket.onrender.com';
 
-        // fetch(Url)
-        //     .then(response => response.json())
-        //     .then(userData => {
-        //         const userInfoContainer = document.getElementById('user-info-container');
+        // je sais c'est moche mais la librairie que je voualis utiliser marcher une fois sur deux ça ma souler 
+        const jwtTokenLocalS = localStorage.getItem('jwtToken');
+        const [headerBase64, payloadBase64, signature] = jwtToken.split('.');
+        const header = JSON.parse(atob(headerBase64));
+        const payload = JSON.parse(atob(payloadBase64));
+        const userEmail = payload.email;
+        const Url = apiUrl + "/user/" + userEmail;
+        fetch(Url)
+            .then(response => response.json())
+            .then(userData => {
+                const userInfoContainer = document.getElementById('user-info-container');
 
-        //         userInfoContainer.innerHTML = `<h2>User Details</h2>
-        //                         <p>Email: ${userData.email}</p>
-        //                         <p>First Name: ${userData.firstName}</p>
-        //                         <p>Last Name: ${userData.lastName}</p>
-        //                         <p>Role: ${userData.role}</p>`;
+                userInfoContainer.innerHTML = `<h2>User Details</h2>
+                                <p>Email: ${userData.email}</p>
+                                <p>First Name: ${userData.firstName}</p>
+                                <p>Last Name: ${userData.lastName}</p>
+                                <p>Role: ${userData.role}</p>`;
 
-        //         userInfoContainer.innerHTML += "<h2>Orders</h2>";
-        //         userInfoContainer.innerHTML += "<table border='1'>";
+                userInfoContainer.innerHTML += "<h2>Orders</h2>";
+                userInfoContainer.innerHTML += "<table border='1'>";
 
-        //         userData.orders.forEach(order => {
-        //             userInfoContainer.innerHTML += `<tr>
-        //                                 <td>Orders ${order.id}</td>
-        //                                 <td><ul>`;
+                userData.orders.forEach(order => {
+                    userInfoContainer.innerHTML += `<tr>
+                                        <td>Orders ${order.id}</td>
+                                        <td><ul>`;
 
-        //             order.products.forEach(product => {
-        //                 userInfoContainer.innerHTML += `<li>Product: ${product.product.name}, Quantity: ${product.quantity}, Price: ${product.product.price}</li>`;
-        //             });
+                    order.products.forEach(product => {
+                        userInfoContainer.innerHTML += `<li>Product: ${product.product.name}, Quantity: ${product.quantity}, Price: ${product.product.price}</li>`;
+                    });
 
-        //             userInfoContainer.innerHTML += "</ul></td></tr>";
-        //         });
+                    userInfoContainer.innerHTML += "</ul></td></tr>";
+                });
 
-        //         userInfoContainer.innerHTML += "</table>";
-        //     })
-        //     .catch(error => console.error("Error fetching data:", error));
+                userInfoContainer.innerHTML += "</table>";
+            })
+            .catch(error => console.error("Error fetching data:", error));
     </script>
 
 </body>
