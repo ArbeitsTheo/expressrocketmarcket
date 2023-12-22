@@ -49,23 +49,21 @@ router.post("/signIn", validateEmail_Middleware_1.default, (req, res) => __await
     const { email, password } = req.body;
     try {
         const user = yield database_1.default.user.findUnique({ where: { email } });
-        // console.log(user);
         if (!user) {
-            return res.status(401).send("Unauthorized");
+            return res.status(401).json({ error: "Unauthorized" });
         }
         const isSamePassword = yield bcrypt_1.default.compare(password, user.password);
         if (!isSamePassword) {
-            return res.status(401).send("Not good password");
+            return res.status(401).json({ error: "Not good password" });
         }
         const token = jsonwebtoken_1.default.sign({ email: user.email, role: user.role }, process.env.JWT_SECRET || "", {
             expiresIn: "1h"
         });
-        // console.log(token);
-        return res.status(200).send(token);
+        return res.status(200).json({ accessToken: token });
     }
     catch (error) {
         console.log(error);
-        return res.status(500).send("Internal server error");
+        return res.status(500).json({ error: "Internal server error" });
     }
 }));
 exports.default = router;

@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const database_1 = __importDefault(require("../util/database"));
+const auth_guard_1 = require("../../guards/auth.guard");
 const router = express_1.default.Router();
 router.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -41,7 +42,7 @@ router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.status(500).send("Internal Server Error");
     }
 }));
-router.patch("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.patch("/:id", (0, auth_guard_1.checkRoles)(['Admin', 'Gest']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const productId = parseInt(req.params.id);
     const { name, price } = req.body;
     try {
@@ -65,18 +66,17 @@ router.patch("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* (
         res.status(500).send("Internal Server Error");
     }
 }));
-router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.delete("/:id", (0, auth_guard_1.checkRoles)(['Admin', 'Gest']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const productId = parseInt(req.params.id);
     try {
-        const existingProduct = yield database_1.default.product.findUnique({
-            where: { id: productId },
-        });
-        if (!existingProduct) {
-            return res.status(404).send("Product not found");
-        }
-        const deletedProduct = yield database_1.default.product.delete({
-            where: { id: productId },
-        });
+        yield database_1.default.$transaction([
+            database_1.default.productOrder.deleteMany({
+                where: { productId },
+            }),
+            database_1.default.product.delete({
+                where: { id: productId },
+            }),
+        ]);
         res.status(201).send("Delete Product Complete");
     }
     catch (error) {

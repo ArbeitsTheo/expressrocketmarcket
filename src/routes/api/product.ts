@@ -1,6 +1,6 @@
 import express, { Router, Request, Response } from "express";
 import prisma from "../util/database";
-
+import { checkRoles } from "../../guards/auth.guard";
 
 const router: Router = express.Router();
 
@@ -32,7 +32,7 @@ router.post("/", async (req: Request, res: Response) => {
     }
 });
 
-router.patch("/:id", async (req: Request, res: Response) => {
+router.patch("/:id", checkRoles(['Admin', 'Gest']), async (req: Request, res: Response) => {
     const productId: number = parseInt(req.params.id);
     const { name, price } = req.body;
 
@@ -60,21 +60,19 @@ router.patch("/:id", async (req: Request, res: Response) => {
     }
 });
 
-router.delete("/:id", async (req: Request, res: Response) => {
+
+router.delete("/:id", checkRoles(['Admin', 'Gest']), async (req: Request, res: Response) => {
     const productId: number = parseInt(req.params.id);
 
     try {
-        const existingProduct = await prisma.product.findUnique({
-            where: { id: productId },
-        });
-
-        if (!existingProduct) {
-            return res.status(404).send("Product not found");
-        }
-
-        const deletedProduct = await prisma.product.delete({
-            where: { id: productId },
-        });
+        await prisma.$transaction([
+            prisma.productOrder.deleteMany({
+                where: { productId },
+            }),
+            prisma.product.delete({
+                where: { id: productId },
+            }),
+        ]);
 
         res.status(201).send("Delete Product Complete");
     } catch (error) {
@@ -82,6 +80,7 @@ router.delete("/:id", async (req: Request, res: Response) => {
         res.status(500).send("Internal Server Error");
     }
 });
+
 
 router.get("/:id", async (req: Request, res: Response) => {
     const productId: number = parseInt(req.params.id);

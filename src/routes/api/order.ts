@@ -1,6 +1,6 @@
 import express, { Router, Request, Response } from "express";
 import prisma from "../util/database";
-
+import { checkRoles } from "../../guards/auth.guard";
 const router: Router = express.Router();
 
 router.get("/", async (req: Request, res: Response) => {
@@ -23,8 +23,31 @@ router.get("/", async (req: Request, res: Response) => {
 
 router.post("/", async (req: Request, res: Response) => {
     const { userId, products } = req.body;
-    console.log(userId, products);
+    // console.log(userId, products);
+
     try {
+        const userExists = await prisma.user.findUnique({
+            where: {
+                id: userId,
+            },
+        });
+
+        if (!userExists) {
+            return res.status(404).json("Utilisateur non trouvé");
+        }
+
+        const productsExist = await prisma.product.findMany({
+            where: {
+                id: {
+                    in: products.map((product: any) => product.productId),
+                },
+            },
+        });
+
+        if (productsExist.length !== products.length) {
+            return res.status(404).json("Certains produits n'existent pas");
+        }
+
         const newOrder = await prisma.order.create({
             data: {
                 userId,
@@ -47,11 +70,24 @@ router.post("/", async (req: Request, res: Response) => {
     }
 });
 
-router.patch("/:id", async (req: Request, res: Response) => {
+
+router.patch("/:id", checkRoles(['Admin', 'Gest']), async (req: Request, res: Response) => {
     const orderId: number = parseInt(req.params.id);
     const { products } = req.body;
 
     try {
+        const productsExist = await prisma.product.findMany({
+            where: {
+                id: {
+                    in: products.map((product: any) => product.productId),
+                },
+            },
+        });
+
+        if (productsExist.length !== products.length) {
+            return res.status(404).json("Certains produits n'existent pas");
+        }
+
         const existingOrder = await prisma.order.findUnique({
             where: { id: orderId },
         });
@@ -84,10 +120,17 @@ router.patch("/:id", async (req: Request, res: Response) => {
 });
 
 
-router.delete("/:id", async (req: Request, res: Response) => {
+router.delete("/:id", checkRoles(['Admin', 'Gest']), async (req: Request, res: Response) => {
     const orderId: number = parseInt(req.params.id);
 
     try {
+        const orderExists = await prisma.order.findUnique({
+            where: { id: orderId },
+        });
+
+        if (!orderExists) {
+            return res.status(404).json("Ordre not exist");
+        }
         await prisma.productOrder.deleteMany({
             where: { orderId },
         });

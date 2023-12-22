@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const database_1 = __importDefault(require("../util/database"));
+const auth_guard_1 = require("../../guards/auth.guard");
 const router = express_1.default.Router();
 router.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -35,8 +36,26 @@ router.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 }));
 router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId, products } = req.body;
-    console.log(userId, products);
+    // console.log(userId, products);
     try {
+        const userExists = yield database_1.default.user.findUnique({
+            where: {
+                id: userId,
+            },
+        });
+        if (!userExists) {
+            return res.status(404).json("Utilisateur non trouvé");
+        }
+        const productsExist = yield database_1.default.product.findMany({
+            where: {
+                id: {
+                    in: products.map((product) => product.productId),
+                },
+            },
+        });
+        if (productsExist.length !== products.length) {
+            return res.status(404).json("Certains produits n'existent pas");
+        }
         const newOrder = yield database_1.default.order.create({
             data: {
                 userId,
@@ -58,10 +77,20 @@ router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.status(500).send("Internal Server Error");
     }
 }));
-router.patch("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.patch("/:id", (0, auth_guard_1.checkRoles)(['Admin', 'Gest']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const orderId = parseInt(req.params.id);
     const { products } = req.body;
     try {
+        const productsExist = yield database_1.default.product.findMany({
+            where: {
+                id: {
+                    in: products.map((product) => product.productId),
+                },
+            },
+        });
+        if (productsExist.length !== products.length) {
+            return res.status(404).json("Certains produits n'existent pas");
+        }
         const existingOrder = yield database_1.default.order.findUnique({
             where: { id: orderId },
         });
@@ -90,9 +119,15 @@ router.patch("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* (
         res.status(500).send("Internal Server Error");
     }
 }));
-router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.delete("/:id", (0, auth_guard_1.checkRoles)(['Admin', 'Gest']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const orderId = parseInt(req.params.id);
     try {
+        const orderExists = yield database_1.default.order.findUnique({
+            where: { id: orderId },
+        });
+        if (!orderExists) {
+            return res.status(404).json("Ordre not exist");
+        }
         yield database_1.default.productOrder.deleteMany({
             where: { orderId },
         });
