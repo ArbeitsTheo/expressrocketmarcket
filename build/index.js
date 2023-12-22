@@ -27,7 +27,8 @@ const cspHandler_Middleware_1 = __importDefault(require("./Middlewares/cspHandle
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         const app = (0, express_1.default)();
-        const port = 3000;
+        const port = process.env.PORT;
+        app.enable('trust proxy');
         app.set("view engine", "ejs");
         app.use(express_1.default.json());
         const limiter = (0, express_rate_limit_1.default)({
@@ -46,6 +47,7 @@ function main() {
         app.use("/product", product_1.default);
         app.use("/order", order_1.default);
         app.listen(port, () => {
+            console.log(port);
             console.log('Serveur running');
         });
     });

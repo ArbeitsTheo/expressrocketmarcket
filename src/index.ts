@@ -15,6 +15,8 @@ async function main() {
     const app = express();
     const port = process.env.PORT;
 
+    app.enable('trust proxy')
+
     app.set("view engine", "ejs")
 
     app.use(express.json());
