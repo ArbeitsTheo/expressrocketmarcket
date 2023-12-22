@@ -13,7 +13,7 @@ import cspHandler from "./Middlewares/cspHandler.Middleware";
 
 async function main() {
     const app = express();
-    const port = 3000;
+    const port = process.env.PORT;
 
     app.set("view engine", "ejs")
 
@@ -38,6 +38,7 @@ async function main() {
     app.use("/order", OrderRoute);
 
     app.listen(port, () => {
+        console.log(port);
         console.log('Serveur running');
     });
 }
