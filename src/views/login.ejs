@@ -1,0 +1,73 @@
+<html lang="en">
+
+<%- include('util/head.ejs') %>
+
+    <body>
+        <div class="container mt-5">
+            <h1 class="mb-4">Login</h1>
+
+            <form id="loginForm" class="needs-validation" novalidate>
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" class="form-control" id="email" name="email" required>
+                    <div class="invalid-feedback">
+                        Please enter a valid email address.
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" class="form-control" id="password" name="password" required>
+                    <div class="invalid-feedback">
+                        Please enter your password.
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Login</button>
+            </form>
+        </div>
+
+        <script>
+            document.getElementById('loginForm').addEventListener('submit', async function (event) {
+                event.preventDefault();
+
+                const formData = {
+                    email: document.getElementById('email').value,
+                    password: document.getElementById('password').value,
+                };
+
+                const currentDomain = window.location.hostname;
+
+                const apiUrl = currentDomain.includes('localhost')
+                    ? 'http://localhost:3000'
+                    : 'https://tp-expressrocketmarket.onrender.com';
+                    
+                try {
+                    const response = await fetch(apiUrl + '/auth/signIn', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(formData),
+                    });
+
+                    const data = await response.json();
+                    console.log(data["accessToken"]);
+                    console.log(data["error"]);
+
+                    if (data["error"] == undefined) {
+                        localStorage.setItem('jwtToken', data["accessToken"]);
+
+                        window.location.href = '/main';
+                    } else {
+                        alert("Password or email incorrect");
+                    }
+
+                } catch (error) {
+                    console.error(error);
+                }
+            });
+        </script>
+    </body>
+
+</html>

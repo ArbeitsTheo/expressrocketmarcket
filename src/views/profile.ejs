@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <%- include('util/head.ejs') %>
+</head>
+
+<body>
+
+    <h1>User Information</h1>
+
+    <!-- Ajoutez un conteneur pour afficher les informations utilisateur -->
+    <div id="user-info-container"></div>
+
+    <script>
+        // URL de l'API
+        const apiUrl = "http://localhost:3000/user/john@doe.com";
+
+        // Effectuer l'appel API
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(userData => {
+                // Sélectionner le conteneur
+                const userInfoContainer = document.getElementById('user-info-container');
+
+                // Afficher les détails de l'utilisateur dans le conteneur
+                userInfoContainer.innerHTML = `<h2>User Details</h2>
+                                <p>Email: ${userData.email}</p>
+                                <p>First Name: ${userData.firstName}</p>
+                                <p>Last Name: ${userData.lastName}</p>
+                                <p>Role: ${userData.role}</p>`;
+
+                // Afficher les commandes dans le conteneur sous forme de tableau
+                userInfoContainer.innerHTML += "<h2>Orders</h2>";
+                userInfoContainer.innerHTML += "<table border='1'>";
+
+                userData.orders.forEach(order => {
+                    userInfoContainer.innerHTML += `<tr>
+                                        <td>Orders ${order.id}</td>
+                                        <td><ul>`;
+
+                    // Afficher les produits de la commande dans une liste
+                    order.products.forEach(product => {
+                        userInfoContainer.innerHTML += `<li>Product: ${product.product.name}, Quantity: ${product.quantity}, Price: ${product.product.price}</li>`;
+                    });
+
+                    userInfoContainer.innerHTML += "</ul></td></tr>";
+                });
+
+                userInfoContainer.innerHTML += "</table>";
+            })
+            .catch(error => console.error("Error fetching data:", error));
+    </script>
+
+</body>
+
+</html>

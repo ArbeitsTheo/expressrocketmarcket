@@ -19,7 +19,7 @@ const database_1 = __importDefault(require("../util/database"));
 const validateEmail_Middleware_1 = __importDefault(require("../../Middlewares/validateEmail.Middleware"));
 const router = express_1.default.Router();
 router.post('/signup', validateEmail_Middleware_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email, password, firstName, lastName, role } = req.body;
+    const { email, password, firstName, lastName } = req.body;
     try {
         const existingUser = yield database_1.default.user.findUnique({
             where: { email },
@@ -35,10 +35,10 @@ router.post('/signup', validateEmail_Middleware_1.default, (req, res) => __await
                 password: uncriptedPassword,
                 firstName,
                 lastName,
-                role,
+                role: "Client",
             },
         });
-        return res.status(200).send(newUser);
+        return res.status(200).send("User create");
     }
     catch (error) {
         console.log(error);
@@ -66,4 +66,10 @@ router.post("/signIn", validateEmail_Middleware_1.default, (req, res) => __await
         return res.status(500).json({ error: "Internal server error" });
     }
 }));
+router.get("/register", function (req, res) {
+    res.render("register");
+});
+router.get("/login", function (req, res) {
+    res.render("login");
+});
 exports.default = router;

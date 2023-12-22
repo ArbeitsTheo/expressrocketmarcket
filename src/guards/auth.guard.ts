@@ -18,7 +18,7 @@ export function checkRoles(allowedRoles: string[]) {
         try {
             const decoded: any = jwt.verify(token, process.env.JWT_SECRET || '');
             const userRole = decoded.role;
-            console.log(userRole);
+            // console.log(userRole);
             if (!allowedRoles.includes(userRole)) {
                 return res.status(403).send('Unauthorized');
             }
@@ -26,7 +26,7 @@ export function checkRoles(allowedRoles: string[]) {
             req.user = decoded.user;
             next();
         } catch (error) {
-            console.log(error);
+            // console.log(error);
             return res.status(401).send('Unauthorized');
         }
     };

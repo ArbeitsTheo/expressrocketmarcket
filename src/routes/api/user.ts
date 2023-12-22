@@ -14,8 +14,8 @@ interface UpdatedUser {
 
 const router: Router = express.Router();
 
-router.patch("/:id", checkUserExistence, checkOldPassword, async (req: Request, res: Response) => {
-    const userId: number = parseInt(req.params.id);
+router.patch("/:email", checkUserExistence, checkOldPassword, async (req: Request, res: Response) => {
+    const userEmail: string = req.params.email;
     const { password, firstName, lastName }: UpdatedUser = req.body;
 
     try {
@@ -26,7 +26,7 @@ router.patch("/:id", checkUserExistence, checkOldPassword, async (req: Request, 
         }
 
         const updatedUser = await prisma.user.update({
-            where: { id: userId },
+            where: { email: userEmail },
             data: updatedUserData,
         });
 
@@ -37,13 +37,15 @@ router.patch("/:id", checkUserExistence, checkOldPassword, async (req: Request, 
     }
 });
 
-router.delete("/:id", checkUserExistence, async (req: Request, res: Response) => {
-    const userId: number = parseInt(req.params.id);
 
+router.delete("/:email", checkUserExistence, async (req: Request, res: Response) => {
+    const userEmail: string = req.params.email;
 
     try {
+        const existingUser = req.existingUser;
+
         const userOrders = await prisma.order.findMany({
-            where: { userId: userId },
+            where: { userId: existingUser.id },
         });
 
         for (const order of userOrders) {
@@ -53,25 +55,28 @@ router.delete("/:id", checkUserExistence, async (req: Request, res: Response) =>
         }
 
         await prisma.order.deleteMany({
-            where: { userId: userId },
-        });
-        await prisma.user.delete({
-            where: { id: userId },
+            where: { userId: existingUser.id },
         });
 
-        res.status(204).send("User delete");
+        await prisma.user.delete({
+            where: { email: userEmail },
+        });
+
+        res.status(200).send("User delete");
     } catch (error) {
         console.error("Error deleting user:", error);
         res.status(500).send("Internal Server Error");
     }
 });
 
-router.get("/:id", checkUserExistence, async (req: Request, res: Response) => {
-    const userId: number = parseInt(req.params.id);
+
+
+router.get("/:email", checkUserExistence, async (req: Request, res: Response) => {
+    const userEmail: string = req.params.email;
 
     try {
         const userWithOrders = await prisma.user.findUnique({
-            where: { id: userId },
+            where: { email: userEmail },
             include: {
                 orders: {
                     include: {
@@ -83,6 +88,7 @@ router.get("/:id", checkUserExistence, async (req: Request, res: Response) => {
                     },
                 },
             },
+
         });
 
         res.status(200).json(userWithOrders);
@@ -92,7 +98,8 @@ router.get("/:id", checkUserExistence, async (req: Request, res: Response) => {
     }
 });
 
-router.get("/", checkRoles(['Admin', 'Gest']), async (req: Request, res: Response) => {
+
+router.get("/", checkRoles(['Admin']), async (req: Request, res: Response) => {
     try {
         const allUsersWithOrders = await prisma.user.findMany({
             include: {
@@ -114,5 +121,28 @@ router.get("/", checkRoles(['Admin', 'Gest']), async (req: Request, res: Respons
         res.status(500).send("Internal Server Error");
     }
 });
+
+router.patch("/role/:email", checkRoles(['Admin']), checkUserExistence, async (req: Request, res: Response) => {
+    const userEmail: string = req.params.email;
+    const { role }: { role: string } = req.body;
+
+    try {
+        const validRoles = ['Admin', 'Gest', 'Client'];
+        if (!validRoles.includes(role)) {
+            return res.status(400).send("Invalid role");
+        }
+
+        const updatedUser = await prisma.user.update({
+            where: { email: userEmail },
+            data: { role: role },
+        });
+
+        res.status(200).json("Update role ok");
+    } catch (error) {
+        console.error("Error updating user role:", error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
 
 export default router;

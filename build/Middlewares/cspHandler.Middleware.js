@@ -4,7 +4,7 @@ const helmet_1 = require("helmet");
 const csp = (0, helmet_1.contentSecurityPolicy)({
     directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
         styleSrc: ["'self'", 'maxcdn.bootstrapcdn.com'],
         fontSrc: ["'self'", 'maxcdn.bootstrapcdn.com'],
     },

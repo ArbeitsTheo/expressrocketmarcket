@@ -19,7 +19,7 @@ import { Prisma } from '@prisma/client';
 
 
 router.post('/signup', validateEmailMiddleware, async (req: Request, res: Response) => {
-  const { email, password, firstName, lastName, role }: User = req.body;
+  const { email, password, firstName, lastName }: User = req.body;
 
   try {
     const existingUser = await prisma.user.findUnique({
@@ -38,11 +38,11 @@ router.post('/signup', validateEmailMiddleware, async (req: Request, res: Respon
         password: uncriptedPassword,
         firstName,
         lastName,
-        role,
+        role: "Client",
       },
     });
 
-    return res.status(200).send(newUser);
+    return res.status(200).send("User create");
   } catch (error) {
     console.log(error);
     return res.status(500).send("Internal server error");
@@ -75,6 +75,14 @@ router.post("/signIn", validateEmailMiddleware, async (req: Request, res: Respon
     console.log(error);
     return res.status(500).json({ error: "Internal server error" });
   }
+});
+
+router.get("/register", function (req, res) {
+  res.render("register");
+});
+
+router.get("/login", function (req, res) {
+  res.render("login");
 });
 
 export default router;

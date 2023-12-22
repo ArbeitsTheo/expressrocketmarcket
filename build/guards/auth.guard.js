@@ -18,7 +18,7 @@ function checkRoles(allowedRoles) {
         try {
             const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET || '');
             const userRole = decoded.role;
-            console.log(userRole);
+            // console.log(userRole);
             if (!allowedRoles.includes(userRole)) {
                 return res.status(403).send('Unauthorized');
             }
@@ -26,7 +26,7 @@ function checkRoles(allowedRoles) {
             next();
         }
         catch (error) {
-            console.log(error);
+            // console.log(error);
             return res.status(401).send('Unauthorized');
         }
     };

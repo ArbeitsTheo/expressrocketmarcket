@@ -2,10 +2,10 @@ import prisma from "../routes/util/database";
 import { Request, Response, NextFunction } from "express";
 
 const checkUserExistence = async (req: Request, res: Response, next: NextFunction) => {
-    const userId: number = parseInt(req.params.id);
+    const userEmail: string = req.params.email;
     try {
         const existingUser = await prisma.user.findUnique({
-            where: { id: userId },
+            where: { email: userEmail },
         });
 
         if (!existingUser) {

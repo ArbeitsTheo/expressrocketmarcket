@@ -4,7 +4,7 @@ import { contentSecurityPolicy } from "helmet";
 const csp = contentSecurityPolicy({
   directives: {
     defaultSrc: ["'self'"],
-    scriptSrc: ["'self'"],
+    scriptSrc: ["'self'", "'unsafe-inline'"],
     styleSrc: ["'self'", 'maxcdn.bootstrapcdn.com'],
     fontSrc: ["'self'", 'maxcdn.bootstrapcdn.com'],
   },

@@ -19,8 +19,8 @@ const checkUserExistence_1 = __importDefault(require("../../service/checkUserExi
 const checkOldPassword_1 = __importDefault(require("../../service/checkOldPassword"));
 const auth_guard_1 = require("../../guards/auth.guard");
 const router = express_1.default.Router();
-router.patch("/:id", checkUserExistence_1.default, checkOldPassword_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const userId = parseInt(req.params.id);
+router.patch("/:email", checkUserExistence_1.default, checkOldPassword_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userEmail = req.params.email;
     const { password, firstName, lastName } = req.body;
     try {
         let updatedUserData = { firstName, lastName };
@@ -29,7 +29,7 @@ router.patch("/:id", checkUserExistence_1.default, checkOldPassword_1.default, (
             updatedUserData.password = uncriptedPassword;
         }
         const updatedUser = yield database_1.default.user.update({
-            where: { id: userId },
+            where: { email: userEmail },
             data: updatedUserData,
         });
         res.status(200).json(updatedUser);
@@ -39,11 +39,12 @@ router.patch("/:id", checkUserExistence_1.default, checkOldPassword_1.default, (
         res.status(500).send("Internal Server Error");
     }
 }));
-router.delete("/:id", checkUserExistence_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const userId = parseInt(req.params.id);
+router.delete("/:email", checkUserExistence_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userEmail = req.params.email;
     try {
+        const existingUser = req.existingUser;
         const userOrders = yield database_1.default.order.findMany({
-            where: { userId: userId },
+            where: { userId: existingUser.id },
         });
         for (const order of userOrders) {
             yield database_1.default.productOrder.deleteMany({
@@ -51,23 +52,23 @@ router.delete("/:id", checkUserExistence_1.default, (req, res) => __awaiter(void
             });
         }
         yield database_1.default.order.deleteMany({
-            where: { userId: userId },
+            where: { userId: existingUser.id },
         });
         yield database_1.default.user.delete({
-            where: { id: userId },
+            where: { email: userEmail },
         });
-        res.status(204).send("User delete");
+        res.status(200).send("User delete");
     }
     catch (error) {
         console.error("Error deleting user:", error);
         res.status(500).send("Internal Server Error");
     }
 }));
-router.get("/:id", checkUserExistence_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const userId = parseInt(req.params.id);
+router.get("/:email", checkUserExistence_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userEmail = req.params.email;
     try {
         const userWithOrders = yield database_1.default.user.findUnique({
-            where: { id: userId },
+            where: { email: userEmail },
             include: {
                 orders: {
                     include: {
@@ -87,7 +88,7 @@ router.get("/:id", checkUserExistence_1.default, (req, res) => __awaiter(void 0,
         res.status(500).send("Internal Server Error");
     }
 }));
-router.get("/", (0, auth_guard_1.checkRoles)(['Admin', 'Gest']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/", (0, auth_guard_1.checkRoles)(['Admin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const allUsersWithOrders = yield database_1.default.user.findMany({
             include: {
@@ -106,6 +107,25 @@ router.get("/", (0, auth_guard_1.checkRoles)(['Admin', 'Gest']), (req, res) => _
     }
     catch (error) {
         console.error("Error fetching all users with orders:", error);
+        res.status(500).send("Internal Server Error");
+    }
+}));
+router.patch("/role/:email", (0, auth_guard_1.checkRoles)(['Admin']), checkUserExistence_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userEmail = req.params.email;
+    const { role } = req.body;
+    try {
+        const validRoles = ['Admin', 'Gest', 'Client'];
+        if (!validRoles.includes(role)) {
+            return res.status(400).send("Invalid role");
+        }
+        const updatedUser = yield database_1.default.user.update({
+            where: { email: userEmail },
+            data: { role: role },
+        });
+        res.status(200).json("Update role ok");
+    }
+    catch (error) {
+        console.error("Error updating user role:", error);
         res.status(500).send("Internal Server Error");
     }
 }));

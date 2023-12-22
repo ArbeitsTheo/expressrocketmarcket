@@ -14,10 +14,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const database_1 = __importDefault(require("../routes/util/database"));
 const checkUserExistence = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const userId = parseInt(req.params.id);
+    const userEmail = req.params.email;
     try {
         const existingUser = yield database_1.default.user.findUnique({
-            where: { id: userId },
+            where: { email: userEmail },
         });
         if (!existingUser) {
             return res.status(404).send("Utilisateur non trouvé");

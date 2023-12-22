@@ -24,24 +24,27 @@ const order_1 = __importDefault(require("./routes/api/order"));
 const cors_1 = __importDefault(require("cors"));
 const helmet_1 = __importDefault(require("helmet"));
 const cspHandler_Middleware_1 = __importDefault(require("./Middlewares/cspHandler.Middleware"));
+const view_1 = __importDefault(require("./routes/view"));
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         const app = (0, express_1.default)();
         const port = process.env.PORT;
         app.enable('trust proxy');
         app.set("view engine", "ejs");
+        app.set('views', 'src/views');
         app.use(express_1.default.json());
         const limiter = (0, express_rate_limit_1.default)({
-            windowMs: 15 * 60 * 1000, // 15 minutes
-            limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
-            standardHeaders: true, // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
-            legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
-            // store: ... , // Use an external store for consistency across multiple server instances.
+            validate: { trustProxy: false },
+            windowMs: 15 * 60 * 1000,
+            limit: 100,
+            standardHeaders: true,
+            legacyHeaders: false,
         });
         app.use(limiter);
         app.use((0, cors_1.default)());
         app.use((0, helmet_1.default)());
         app.use(cspHandler_Middleware_1.default);
+        app.use("/", view_1.default);
         app.use("/auth", auth_1.default);
         app.use("/user", user_1.default);
         app.use("/product", product_1.default);
