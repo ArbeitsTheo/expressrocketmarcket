@@ -14,7 +14,7 @@ router.get("/", async (req: Request, res: Response) => {
     }
 });
 
-router.post("/", async (req: Request, res: Response) => {
+router.post("/", checkRoles(['Admin', 'Gest']), async (req: Request, res: Response) => {
     const { name, price } = req.body;
 
     try {
