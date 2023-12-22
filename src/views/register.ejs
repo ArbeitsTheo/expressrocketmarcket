@@ -53,6 +53,7 @@
           firstName: document.getElementById('firstName').value,
           lastName: document.getElementById('lastName').value,
         };
+        const currentDomain = window.location.hostname;
         const apiUrl = currentDomain.includes('localhost')
           ? 'http://localhost:3000'
           : 'https://tp-expressrocketmarket.onrender.com';
