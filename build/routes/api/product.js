@@ -19,14 +19,14 @@ const router = express_1.default.Router();
 router.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const products = yield database_1.default.product.findMany();
-        res.json(products);
+        res.status(200).json(products);
     }
     catch (error) {
         console.error("Error fetching products:", error);
         res.status(500).send("Internal Server Error");
     }
 }));
-router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/", (0, auth_guard_1.checkRoles)(['Admin', 'Gest']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { name, price } = req.body;
     try {
         const newProduct = yield database_1.default.product.create({
@@ -35,7 +35,7 @@ router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 price,
             },
         });
-        res.json(newProduct);
+        res.status(201).json(newProduct);
     }
     catch (error) {
         console.error("Error creating product:", error);
@@ -59,7 +59,7 @@ router.patch("/:id", (0, auth_guard_1.checkRoles)(['Admin', 'Gest']), (req, res)
                 price,
             },
         });
-        res.json(updatedProduct);
+        res.status(200).json(updatedProduct);
     }
     catch (error) {
         console.error("Error updating product:", error);
@@ -87,7 +87,7 @@ router.delete("/:id", (0, auth_guard_1.checkRoles)(['Admin', 'Gest']), (req, res
                 where: { id: productId },
             }),
         ]);
-        res.status(201).send("Delete Product Complete");
+        res.status(204).send("Delete Product Complete");
     }
     catch (error) {
         console.error("Error deleting product:", error);
@@ -103,7 +103,7 @@ router.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         if (!product) {
             return res.status(404).send("Product not found");
         }
-        res.json(product);
+        res.status(200).json(product);
     }
     catch (error) {
         console.error("Error fetching product details:", error);

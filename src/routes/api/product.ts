@@ -7,7 +7,7 @@ const router: Router = express.Router();
 router.get("/", async (req: Request, res: Response) => {
     try {
         const products = await prisma.product.findMany();
-        res.json(products);
+        res.status(200).json(products);
     } catch (error) {
         console.error("Error fetching products:", error);
         res.status(500).send("Internal Server Error");
@@ -25,7 +25,7 @@ router.post("/", checkRoles(['Admin', 'Gest']), async (req: Request, res: Respon
             },
         });
 
-        res.json(newProduct);
+        res.status(201).json(newProduct);
     } catch (error) {
         console.error("Error creating product:", error);
         res.status(500).send("Internal Server Error");
@@ -53,7 +53,7 @@ router.patch("/:id", checkRoles(['Admin', 'Gest']), async (req: Request, res: Re
             },
         });
 
-        res.json(updatedProduct);
+        res.status(200).json(updatedProduct);
     } catch (error) {
         console.error("Error updating product:", error);
         res.status(500).send("Internal Server Error");
@@ -87,7 +87,7 @@ router.delete("/:id", checkRoles(['Admin', 'Gest']), async (req: Request, res: R
             }),
         ]);
 
-        res.status(201).send("Delete Product Complete");
+        res.status(204).send("Delete Product Complete");
     } catch (error) {
         console.error("Error deleting product:", error);
         res.status(500).send("Internal Server Error");
@@ -108,7 +108,7 @@ router.get("/:id", async (req: Request, res: Response) => {
             return res.status(404).send("Product not found");
         }
 
-        res.json(product);
+        res.status(200).json(product);
     } catch (error) {
         console.error("Error fetching product details:", error);
         res.status(500).send("Internal Server Error");

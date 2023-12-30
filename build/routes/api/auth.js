@@ -38,7 +38,7 @@ router.post('/signup', validateEmail_Middleware_1.default, (req, res) => __await
                 role: "Client",
             },
         });
-        return res.status(200).send("User create");
+        return res.status(201).send("User create");
     }
     catch (error) {
         console.log(error);

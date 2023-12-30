@@ -42,7 +42,7 @@ router.post('/signup', validateEmailMiddleware, async (req: Request, res: Respon
       },
     });
 
-    return res.status(200).send("User create");
+    return res.status(201).send("User create");
   } catch (error) {
     console.log(error);
     return res.status(500).send("Internal server error");

@@ -62,7 +62,7 @@ router.delete("/:email", checkUserExistence, async (req: Request, res: Response)
             where: { email: userEmail },
         });
 
-        res.status(200).send("User delete");
+        res.status(204).send("User delete");
     } catch (error) {
         console.error("Error deleting user:", error);
         res.status(500).send("Internal Server Error");

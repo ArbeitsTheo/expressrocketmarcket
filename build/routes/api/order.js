@@ -27,7 +27,7 @@ router.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 },
             },
         });
-        res.json(orders);
+        res.status(200).json(orders);
     }
     catch (error) {
         console.error("Error fetching orders:", error);
@@ -35,8 +35,18 @@ router.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 }));
 router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { userId, products } = req.body;
-    // console.log(userId, products);
+    let userId = req.body.userId;
+    const { products } = req.body;
+    if (typeof userId === 'string') {
+        userId = parseInt(userId, 10);
+    }
+    if (products.some((product) => typeof product.productId === 'string')) {
+        products.forEach((product) => {
+            if (typeof product.productId === 'string') {
+                product.productId = parseInt(product.productId, 10);
+            }
+        });
+    }
     try {
         const userExists = yield database_1.default.user.findUnique({
             where: {
@@ -70,16 +80,26 @@ router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 products: true,
             },
         });
-        res.json(newOrder);
+        res.status(201).json(newOrder);
     }
     catch (error) {
-        console.error("Error creating order:", error);
-        res.status(500).send("Internal Server Error");
+        console.error("Erreur lors de la création de la commande :", error);
+        res.status(500).send("Erreur interne du serveur");
     }
 }));
 router.patch("/:id", (0, auth_guard_1.checkRoles)(['Admin', 'Gest']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const orderId = parseInt(req.params.id);
+    let orderId = req.params.id;
     const { products } = req.body;
+    if (typeof orderId === 'string') {
+        orderId = parseInt(orderId, 10);
+    }
+    if (products.some((product) => typeof product.productId === 'string')) {
+        products.forEach((product) => {
+            if (typeof product.productId === 'string') {
+                product.productId = parseInt(product.productId, 10);
+            }
+        });
+    }
     try {
         const productsExist = yield database_1.default.product.findMany({
             where: {
@@ -95,7 +115,7 @@ router.patch("/:id", (0, auth_guard_1.checkRoles)(['Admin', 'Gest']), (req, res)
             where: { id: orderId },
         });
         if (!existingOrder) {
-            return res.status(404).send("Order not found");
+            return res.status(404).send("Commande introuvable");
         }
         const updatedOrder = yield database_1.default.order.update({
             where: { id: orderId },
@@ -112,11 +132,11 @@ router.patch("/:id", (0, auth_guard_1.checkRoles)(['Admin', 'Gest']), (req, res)
                 products: true,
             },
         });
-        res.json(updatedOrder);
+        res.status(200).json(updatedOrder);
     }
     catch (error) {
-        console.error("Error updating order:", error);
-        res.status(500).send("Internal Server Error");
+        console.error("Erreur lors de la mise à jour de la commande :", error);
+        res.status(500).send("Erreur interne du serveur");
     }
 }));
 router.delete("/:id", (0, auth_guard_1.checkRoles)(['Admin', 'Gest']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -134,7 +154,7 @@ router.delete("/:id", (0, auth_guard_1.checkRoles)(['Admin', 'Gest']), (req, res
         const deletedOrder = yield database_1.default.order.delete({
             where: { id: orderId },
         });
-        res.status(201).send("Delete Order Complete");
+        res.status(204).send("Delete Order Complete");
     }
     catch (error) {
         console.error("Error deleting order:", error);
@@ -157,7 +177,7 @@ router.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         if (!order) {
             return res.status(404).send("Order not found");
         }
-        res.json(order);
+        res.status(200).json(order);
     }
     catch (error) {
         console.error("Error fetching order details:", error);

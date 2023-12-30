@@ -57,7 +57,7 @@ router.delete("/:email", checkUserExistence_1.default, (req, res) => __awaiter(v
         yield database_1.default.user.delete({
             where: { email: userEmail },
         });
-        res.status(200).send("User delete");
+        res.status(204).send("User delete");
     }
     catch (error) {
         console.error("Error deleting user:", error);
